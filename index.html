@@ -663,11 +663,10 @@
     sendBtn.textContent = 'Enviando...';
     statusEl.textContent = '';
 
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      // Content-Type text/plain evita o preflight OPTIONS, que o Apps Script não trata bem
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ marca: marca, relatorio: text, token: SEND_TOKEN })
+    const params = new URLSearchParams({ marca: marca, relatorio: text, token: SEND_TOKEN });
+
+    fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
+      method: 'GET'
     })
       .then(res => res.json())
       .then(resp => {
