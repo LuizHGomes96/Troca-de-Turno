@@ -420,9 +420,9 @@
 <script>
   // ==== CONFIGURAÇÃO DA INTEGRAÇÃO COM O SLACK (via Apps Script) ====
   // Cole aqui a URL da implantação do Apps Script (termina em /exec)
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM9S3C0Gvr3C2Ja9XridqvyXXB7nv1vRxAOsz_Lab9uJEN0BesT-L1E4GcQ_7x4Z7i/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtwQt9YjOvOj3MClT2SAFvOfA49U4xOPAR2CBwclNHrhQmMRQVdfwc5iOukFgR8uxm/exec";
   // Mesmo valor de token configurado no doPost do Apps Script
-  const SEND_TOKEN = "EspecialistaTeste";
+  const SEND_TOKEN = "um-valor-que-só-vocês-conhecem";
   // ====================================================================
 
   // set default date to today
@@ -663,7 +663,14 @@
     sendBtn.textContent = 'Enviando...';
     statusEl.textContent = '';
 
-    const params = new URLSearchParams({ marca: marca, relatorio: text, token: SEND_TOKEN });
+    const params = new URLSearchParams({
+      marca: marca,
+      relatorio: text,
+      token: SEND_TOKEN,
+      especialista: val('especialista'),
+      turno: document.getElementById('turno').value,
+      dataTurno: dataInput.value
+    });
 
     fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
       method: 'GET'
