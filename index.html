@@ -420,10 +420,13 @@
 <script>
   // ==== CONFIGURAÇÃO DA INTEGRAÇÃO COM O SLACK (via Apps Script) ====
   // Cole aqui a URL da implantação do Apps Script (termina em /exec)
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyz0H90iarCGOFgvCeaCLva2Zie3bF7SagqFP9Sdvc_zmaXcnxKrcxkDlsE--g27FD2/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWMmsL7owqbnwMOQp5U9wmrbdVhuBXotWFGIm_UVowGSl1rExc_3ZyNmnZyw-se7h0/exec";
   // Mesmo valor de token configurado no doPost do Apps Script
   const SEND_TOKEN = "um-valor-que-só-vocês-conhecem";
   // ====================================================================
+
+  // preenchido pelo botão "Gerar Relatório", usado pelo botão "Enviar ao Slack"
+  let currentSections = {};
 
   // set default date to today
   const dataInput = document.getElementById('data');
@@ -542,6 +545,84 @@
 
     updateSectionNumbers();
 
+    // conteúdo de cada seção, guardado separadamente (sem o número/título) para uso na planilha
+    const secGeral = toggleState('geral')
+      ? (val('geral-resumo') || '—')
+      : 'Sem ocorrências gerais registradas neste turno.';
+
+    const secSite = [
+      `Status do site: ${checkbox(siteStatus==='Normal')} Normal ${checkbox(siteStatus==='Instável')} Instável ${checkbox(siteStatus==='Indisponível')} Indisponível`,
+      `Descrição da ocorrência: ${siteDesc || '—'}`
+    ].join('\n');
+
+    const secJogos = toggleState('jogos')
+      ? [
+          `Jogos afetados: ${val('jogos-afetados') || '—'}`,
+          `Tipo de ocorrência: ${val('jogos-tipo') || '—'}`,
+          `Impacto identificado: ${val('jogos-impacto') || '—'}`
+        ].join('\n')
+      : 'Não foram identificadas ocorrências em jogos neste turno.';
+
+    const secFinanceiro = toggleState('financeiro')
+      ? [
+          `Ocorrências financeiras registradas: ${val('fin-registro') || '—'}`,
+          `PSP / Gateway envolvido (se aplicável): ${val('fin-psp') || '—'}`,
+          `Ação tomada: ${val('fin-acao') || '—'}`,
+          `Motivo: ${val('fin-motivo') || '—'}`,
+          `Status: ${val('fin-status') || '—'}`
+        ].join('\n')
+      : 'Não foram identificadas ocorrências financeiras neste turno.';
+
+    const secComunicacao = toggleState('comunicacao')
+      ? [
+          `Áreas envolvidas: ${val('com-areas') || '—'}`,
+          `Resumo da comunicação: ${val('com-resumo') || '—'}`
+        ].join('\n')
+      : 'Não houve comunicações internas relevantes neste turno.';
+
+    const ticketsLinhas = [`Total de tickets no turno: ${val('tk-total') || '0'}`];
+    if ((parseInt(val('tk-total'), 10) || 0) !== 0) {
+      ticketsLinhas.push(`Tickets abertos: ${val('tk-abertos') || '—'}`);
+    }
+    ticketsLinhas.push(`Tickets críticos: ${val('tk-criticos') || '0'}`);
+    ticketsLinhas.push(`Principais motivos de acionamento: ${val('tk-motivos') || '—'}`);
+    ticketsLinhas.push(`Tickets pendentes para o próximo turno: ${val('tk-pendentes') || 'Nenhum'}`);
+    const secTickets = ticketsLinhas.join('\n');
+
+    const marcaAtual = document.getElementById('marca').value;
+    const aplicaSaques = (marcaAtual === 'Esportes da Sorte' || marcaAtual === 'Lottu');
+    const aplicaDepositos = (marcaAtual === 'Esportes da Sorte');
+
+    const secSaques = aplicaSaques
+      ? [
+          `${saquesRangeText()} ✅`,
+          toggleState('saques')
+            ? (val('saques-desc') || 'Foram identificados saques rejeitados pagos — ver detalhes.')
+            : 'Não foram identificados saques rejeitados pagos.'
+        ].join('\n')
+      : 'Não se aplica a esta marca.';
+
+    const secDepositos = aplicaDepositos
+      ? (toggleState('depositos')
+          ? (val('dep-desc') || 'Foram identificados depósitos no status New — ver detalhes.')
+          : 'Não foram identificados depósitos no status New.')
+      : 'Não se aplica a esta marca.';
+
+    const secObservacoes = val('obs-tecnicas') || '—';
+
+    // guarda para o botão de envio usar, sem precisar recalcular
+    currentSections = {
+      geral: secGeral,
+      site: secSite,
+      jogos: secJogos,
+      financeiro: secFinanceiro,
+      comunicacao: secComunicacao,
+      tickets: secTickets,
+      saques: secSaques,
+      depositos: secDepositos,
+      observacoes: secObservacoes
+    };
+
     let lines = [];
     lines.push('RELATÓRIO OPERACIONAL – TROCA DE TURNO');
     lines.push(`Especialista: ${val('especialista')}`);
@@ -549,85 +630,38 @@
     lines.push(`Turno | Data: ${document.getElementById('turno').value} - ${fmtDate(dataInput.value)}`);
     lines.push('');
     lines.push(`${sectionNumbers['h-geral']}. Ocorrências Gerais`);
-    if (toggleState('geral')) {
-      lines.push(val('geral-resumo') || '—');
-    } else {
-      lines.push('Sem ocorrências gerais registradas neste turno.');
-    }
+    lines.push(secGeral);
     lines.push('');
     lines.push(`${sectionNumbers['h-geral']}.1 Site`);
-    lines.push(`Status do site: ${checkbox(siteStatus==='Normal')} Normal ${checkbox(siteStatus==='Instável')} Instável ${checkbox(siteStatus==='Indisponível')} Indisponível`);
-    lines.push(`Descrição da ocorrência: ${siteDesc || '—'}`);
+    lines.push(secSite);
     lines.push('');
-
     lines.push(`${sectionNumbers['h-geral']}.2 Jogos`);
-    if (toggleState('jogos')) {
-      lines.push(`Jogos afetados: ${val('jogos-afetados') || '—'}`);
-      lines.push(`Tipo de ocorrência: ${val('jogos-tipo') || '—'}`);
-      lines.push(`Impacto identificado: ${val('jogos-impacto') || '—'}`);
-    } else {
-      lines.push('Não foram identificadas ocorrências em jogos neste turno.');
-    }
+    lines.push(secJogos);
     lines.push('');
-
     lines.push(`${sectionNumbers['h-geral']}.3 Financeiro`);
-    if (toggleState('financeiro')) {
-      lines.push(`Ocorrências financeiras registradas: ${val('fin-registro') || '—'}`);
-      lines.push(`PSP / Gateway envolvido (se aplicável): ${val('fin-psp') || '—'}`);
-      lines.push(`Ação tomada: ${val('fin-acao') || '—'}`);
-      lines.push(`Motivo: ${val('fin-motivo') || '—'}`);
-      lines.push(`Status: ${val('fin-status') || '—'}`);
-    } else {
-      lines.push('Não foram identificadas ocorrências financeiras neste turno.');
-    }
+    lines.push(secFinanceiro);
     lines.push('');
-
     lines.push(`${sectionNumbers['h-comunicacao']}. Comunicações Internas`);
-    if (toggleState('comunicacao')) {
-      lines.push(`Áreas envolvidas: ${val('com-areas') || '—'}`);
-      lines.push(`Resumo da comunicação: ${val('com-resumo') || '—'}`);
-    } else {
-      lines.push('Não houve comunicações internas relevantes neste turno.');
-    }
+    lines.push(secComunicacao);
     lines.push('');
-
     lines.push(`${sectionNumbers['h-tickets']}. Resumo de Tickets`);
-    lines.push(`Total de tickets no turno: ${val('tk-total') || '0'}`);
-    if ((parseInt(val('tk-total'), 10) || 0) !== 0) {
-      lines.push(`Tickets abertos: ${val('tk-abertos') || '—'}`);
-    }
-    lines.push(`Tickets críticos: ${val('tk-criticos') || '0'}`);
-    lines.push(`Principais motivos de acionamento: ${val('tk-motivos') || '—'}`);
-    lines.push(`Tickets pendentes para o próximo turno: ${val('tk-pendentes') || 'Nenhum'}`);
+    lines.push(secTickets);
     lines.push('');
-
-    const marcaAtual = document.getElementById('marca').value;
-    const aplicaSaques = (marcaAtual === 'Esportes da Sorte' || marcaAtual === 'Lottu');
-    const aplicaDepositos = (marcaAtual === 'Esportes da Sorte');
 
     if (aplicaSaques) {
       lines.push(`${sectionNumbers['h-saques']}. Controle de Saques Rejeitados:`);
-      lines.push(`${saquesRangeText()} ✅`);
-      if (toggleState('saques')) {
-        lines.push(val('saques-desc') || 'Foram identificados saques rejeitados pagos — ver detalhes.');
-      } else {
-        lines.push('Não foram identificados saques rejeitados pagos.');
-      }
+      lines.push(secSaques);
       lines.push('');
     }
 
     if (aplicaDepositos) {
       lines.push(`${sectionNumbers['h-depositos']}. Depósitos status New`);
-      if (toggleState('depositos')) {
-        lines.push(val('dep-desc') || 'Foram identificados depósitos no status New — ver detalhes.');
-      } else {
-        lines.push('Não foram identificados depósitos no status New.');
-      }
+      lines.push(secDepositos);
       lines.push('');
     }
 
     lines.push(`${sectionNumbers['h-obs']}. Observações Técnicas:`);
-    lines.push(val('obs-tecnicas') || '—');
+    lines.push(secObservacoes);
 
     const output = lines.join('\n');
     document.getElementById('output').textContent = output;
@@ -669,7 +703,16 @@
       token: SEND_TOKEN,
       especialista: val('especialista'),
       turno: document.getElementById('turno').value,
-      dataTurno: dataInput.value
+      dataTurno: dataInput.value,
+      secGeral: currentSections.geral || '',
+      secSite: currentSections.site || '',
+      secJogos: currentSections.jogos || '',
+      secFinanceiro: currentSections.financeiro || '',
+      secComunicacao: currentSections.comunicacao || '',
+      secTickets: currentSections.tickets || '',
+      secSaques: currentSections.saques || '',
+      secDepositos: currentSections.depositos || '',
+      secObservacoes: currentSections.observacoes || ''
     });
 
     fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
