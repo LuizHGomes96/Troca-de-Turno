@@ -175,6 +175,37 @@
     cursor:pointer;
   }
   .copy-row button:hover{border-color: var(--accent);}
+
+  .occurrence-list{display:flex; flex-direction:column; gap:12px;}
+  .occurrence-card{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 40px 16px 14px;
+    background: var(--panel-2);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .occurrence-card .field{gap:4px;}
+  .remove-occurrence-btn{
+    position:absolute; top:8px; right:8px;
+    background:transparent; border:none; color: var(--text-dim);
+    cursor:pointer; font-size:1rem; line-height:1;
+    padding:6px;
+  }
+  .remove-occurrence-btn:hover{color: var(--danger);}
+  .add-occurrence-btn{
+    border:1px dashed var(--line);
+    background:transparent;
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    padding: 10px;
+    cursor:pointer;
+    font-size:0.85rem;
+    align-self:flex-start;
+  }
+  .add-occurrence-btn:hover{border-color: var(--accent); color: var(--accent);}
+  .ticket-flags{display:flex; gap:18px; flex-wrap:wrap; font-size:0.88rem;}
+  .ticket-flags label{display:flex; align-items:center; gap:6px; cursor:pointer; color: var(--text);}
 </style>
 </head>
 <body>
@@ -257,20 +288,28 @@
       </div>
     </div>
     <div class="block-body hidden" id="jogos-body">
-      <div class="field">
-        <label for="jogos-afetados">Jogos afetados</label>
-        <input type="text" id="jogos-afetados">
-      </div>
-      <div class="field">
-        <label for="jogos-tipo">Tipo de ocorrência</label>
-        <input type="text" id="jogos-tipo">
-      </div>
-      <div class="field">
-        <label for="jogos-impacto">Impacto identificado</label>
-        <textarea id="jogos-impacto"></textarea>
-      </div>
+      <div class="occurrence-list" id="jogos-list"></div>
+      <button type="button" class="add-occurrence-btn" data-add="jogos">+ Adicionar ocorrência</button>
     </div>
   </section>
+
+  <template id="template-jogos">
+    <div class="occurrence-card">
+      <button type="button" class="remove-occurrence-btn" title="Remover">✕</button>
+      <div class="field">
+        <label>Jogos afetados</label>
+        <input type="text" data-field="afetados">
+      </div>
+      <div class="field">
+        <label>Tipo de ocorrência</label>
+        <input type="text" data-field="tipo">
+      </div>
+      <div class="field">
+        <label>Impacto identificado</label>
+        <textarea data-field="impacto"></textarea>
+      </div>
+    </div>
+  </template>
 
   <!-- 1.3 FINANCEIRO -->
   <section class="block" data-key="financeiro">
@@ -282,28 +321,36 @@
       </div>
     </div>
     <div class="block-body hidden" id="financeiro-body">
-      <div class="field">
-        <label for="fin-registro">Ocorrências financeiras registradas</label>
-        <textarea id="fin-registro"></textarea>
-      </div>
-      <div class="field">
-        <label for="fin-psp">PSP / Gateway envolvido (se aplicável)</label>
-        <input type="text" id="fin-psp">
-      </div>
-      <div class="field">
-        <label for="fin-acao">Ação tomada</label>
-        <input type="text" id="fin-acao">
-      </div>
-      <div class="field">
-        <label for="fin-motivo">Motivo</label>
-        <input type="text" id="fin-motivo">
-      </div>
-      <div class="field">
-        <label for="fin-status">Status</label>
-        <input type="text" id="fin-status">
-      </div>
+      <div class="occurrence-list" id="financeiro-list"></div>
+      <button type="button" class="add-occurrence-btn" data-add="financeiro">+ Adicionar ocorrência</button>
     </div>
   </section>
+
+  <template id="template-financeiro">
+    <div class="occurrence-card">
+      <button type="button" class="remove-occurrence-btn" title="Remover">✕</button>
+      <div class="field">
+        <label>Ocorrências financeiras registradas</label>
+        <textarea data-field="registro"></textarea>
+      </div>
+      <div class="field">
+        <label>PSP / Gateway envolvido (se aplicável)</label>
+        <input type="text" data-field="psp">
+      </div>
+      <div class="field">
+        <label>Ação tomada</label>
+        <input type="text" data-field="acao">
+      </div>
+      <div class="field">
+        <label>Motivo</label>
+        <input type="text" data-field="motivo">
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <input type="text" data-field="status">
+      </div>
+    </div>
+  </template>
 
   <!-- 2. COMUNICACOES -->
   <section class="block" data-key="comunicacao">
@@ -315,43 +362,57 @@
       </div>
     </div>
     <div class="block-body hidden" id="comunicacao-body">
-      <div class="field">
-        <label for="com-areas">Áreas envolvidas</label>
-        <input type="text" id="com-areas">
-      </div>
-      <div class="field">
-        <label for="com-resumo">Resumo da comunicação</label>
-        <textarea id="com-resumo"></textarea>
-      </div>
+      <div class="occurrence-list" id="comunicacao-list"></div>
+      <button type="button" class="add-occurrence-btn" data-add="comunicacao">+ Adicionar comunicação</button>
     </div>
   </section>
 
-  <!-- 3. TICKETS -->
-  <section class="block">
-    <div class="block-head"><h2 id="h-tickets">3. Resumo de Tickets</h2></div>
-    <div class="block-body">
+  <template id="template-comunicacao">
+    <div class="occurrence-card">
+      <button type="button" class="remove-occurrence-btn" title="Remover">✕</button>
       <div class="field">
-        <label for="tk-total">Total de tickets no turno</label>
-        <input type="number" id="tk-total" min="0" value="0">
-      </div>
-      <div class="field hidden" id="tk-abertos-field">
-        <label for="tk-abertos">Tickets abertos</label>
-        <textarea id="tk-abertos" placeholder="Informe os tickets abertos no turno"></textarea>
+        <label>Áreas envolvidas</label>
+        <input type="text" data-field="areas">
       </div>
       <div class="field">
-        <label for="tk-criticos">Tickets críticos</label>
-        <input type="number" id="tk-criticos" min="0" value="0">
-      </div>
-      <div class="field">
-        <label for="tk-motivos">Principais motivos de acionamento</label>
-        <textarea id="tk-motivos"></textarea>
-      </div>
-      <div class="field">
-        <label for="tk-pendentes">Tickets pendentes para o próximo turno</label>
-        <textarea id="tk-pendentes"></textarea>
+        <label>Resumo da comunicação</label>
+        <textarea data-field="resumo"></textarea>
       </div>
     </div>
+  </template>
+
+  <!-- 3. TICKETS -->
+  <section class="block" data-key="tickets">
+    <div class="block-head">
+      <h2 id="h-tickets">3. Resumo de Tickets</h2>
+      <div class="toggle" data-target="tickets">
+        <button type="button" data-val="nao" class="active">Sem tickets abertos</button>
+        <button type="button" data-val="sim">Houve tickets abertos</button>
+      </div>
+    </div>
+    <div class="block-body hidden" id="tickets-body">
+      <div class="occurrence-list" id="tickets-list"></div>
+      <button type="button" class="add-occurrence-btn" id="add-ticket-btn">+ Adicionar ticket</button>
+    </div>
   </section>
+
+  <template id="template-ticket">
+    <div class="occurrence-card ticket-card">
+      <button type="button" class="remove-occurrence-btn" title="Remover">✕</button>
+      <div class="field">
+        <label>Número do ticket</label>
+        <input type="text" data-field="numero" placeholder="Ex: PS-84388">
+      </div>
+      <div class="field">
+        <label>Nome / motivo do ticket</label>
+        <input type="text" data-field="nome">
+      </div>
+      <div class="ticket-flags">
+        <label><input type="checkbox" data-field="critico"> Crítico</label>
+        <label><input type="checkbox" data-field="pendente"> Pendente para o próximo turno</label>
+      </div>
+    </div>
+  </template>
 
   <!-- 4. SAQUES REJEITADOS -->
   <section class="block" data-key="saques" id="section-saques">
@@ -394,11 +455,20 @@
   <section class="block">
     <div class="block-head"><h2 id="h-obs">6. Observações Técnicas</h2></div>
     <div class="block-body">
-      <div class="field">
-        <textarea id="obs-tecnicas" placeholder="Opcional"></textarea>
-      </div>
+      <div class="occurrence-list" id="observacoes-list"></div>
+      <button type="button" class="add-occurrence-btn" data-add="observacoes">+ Adicionar observação</button>
     </div>
   </section>
+
+  <template id="template-observacoes">
+    <div class="occurrence-card">
+      <button type="button" class="remove-occurrence-btn" title="Remover">✕</button>
+      <div class="field">
+        <label>Observação</label>
+        <textarea data-field="texto"></textarea>
+      </div>
+    </div>
+  </template>
 
   <div class="generate-bar">
     <button class="ghost" type="button" id="resetBtn">Limpar</button>
@@ -420,13 +490,156 @@
 <script>
   // ==== CONFIGURAÇÃO DA INTEGRAÇÃO COM O SLACK (via Apps Script) ====
   // Cole aqui a URL da implantação do Apps Script (termina em /exec)
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWMmsL7owqbnwMOQp5U9wmrbdVhuBXotWFGIm_UVowGSl1rExc_3ZyNmnZyw-se7h0/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyz0H90iarCGOFgvCeaCLva2Zie3bF7SagqFP9Sdvc_zmaXcnxKrcxkDlsE--g27FD2/exec";
   // Mesmo valor de token configurado no doPost do Apps Script
   const SEND_TOKEN = "um-valor-que-só-vocês-conhecem";
   // ====================================================================
 
   // preenchido pelo botão "Gerar Relatório", usado pelo botão "Enviar ao Slack"
   let currentSections = {};
+  // dados estruturados (não só texto), preenchidos junto com currentSections, usados para gravar na planilha por abas
+  let currentStructured = {};
+
+  // ==== SEÇÕES COM OCORRÊNCIAS REPETÍVEIS (Jogos, Financeiro, Comunicações, Saques, Depósitos) ====
+  const OCCURRENCE_CONFIG = {
+    jogos: {
+      listId: 'jogos-list',
+      templateId: 'template-jogos',
+      fields: ['afetados', 'tipo', 'impacto'],
+      fieldLabels: { afetados: 'Jogos afetados', tipo: 'Tipo de ocorrência', impacto: 'Impacto identificado' },
+      emptyText: 'Não foram identificadas ocorrências em jogos neste turno.'
+    },
+    financeiro: {
+      listId: 'financeiro-list',
+      templateId: 'template-financeiro',
+      fields: ['registro', 'psp', 'acao', 'motivo', 'status'],
+      titleField: 'registro',
+      fieldLabels: { psp: 'PSP / Gateway envolvido (se aplicável)', acao: 'Ação tomada', motivo: 'Motivo', status: 'Status' },
+      emptyText: 'Não foram identificadas ocorrências financeiras neste turno.'
+    },
+    comunicacao: {
+      listId: 'comunicacao-list',
+      templateId: 'template-comunicacao',
+      fields: ['areas', 'resumo'],
+      fieldLabels: { areas: 'Áreas envolvidas', resumo: 'Resumo da comunicação' },
+      occurrenceLabel: 'Comunicação',
+      emptyText: 'Não houve comunicações internas relevantes neste turno.'
+    },
+    observacoes: {
+      listId: 'observacoes-list',
+      templateId: 'template-observacoes',
+      fields: ['texto'],
+      titleField: 'texto',
+      fieldLabels: {},
+      occurrenceLabel: 'Observação',
+      noToggle: true,
+      emptyText: '—'
+    }
+  };
+
+  function addOccurrenceCard(key){
+    const config = OCCURRENCE_CONFIG[key];
+    const template = document.getElementById(config.templateId);
+    const list = document.getElementById(config.listId);
+    const fragment = template.content.cloneNode(true);
+    const card = fragment.querySelector('.occurrence-card');
+    card.querySelector('.remove-occurrence-btn').addEventListener('click', () => card.remove());
+    list.appendChild(fragment);
+  }
+
+  function collectOccurrences(key){
+    const config = OCCURRENCE_CONFIG[key];
+    const list = document.getElementById(config.listId);
+    const cards = list.querySelectorAll('.occurrence-card');
+    const result = [];
+    cards.forEach(card => {
+      const entry = {};
+      let hasValue = false;
+      config.fields.forEach(f => {
+        const el = card.querySelector(`[data-field="${f}"]`);
+        const v = el ? el.value.trim() : '';
+        entry[f] = v;
+        if (v) hasValue = true;
+      });
+      if (hasValue) result.push(entry);
+    });
+    return result;
+  }
+
+  function buildOccurrenceText(key){
+    const config = OCCURRENCE_CONFIG[key];
+    if (!config.noToggle && !toggleState(key)) return config.emptyText;
+    const occurrences = collectOccurrences(key);
+    if (occurrences.length === 0) return config.emptyText;
+    const label = config.occurrenceLabel || 'Ocorrência';
+    return occurrences.map((occ, idx) => {
+      let linhas;
+      if (config.titleField) {
+        linhas = [`${label} ${idx + 1}: ${occ[config.titleField] || '—'}`];
+        config.fields.forEach(f => {
+          if (f === config.titleField) return;
+          linhas.push(`${config.fieldLabels[f]}: ${occ[f] || '—'}`);
+        });
+      } else {
+        linhas = [`${label} ${idx + 1}:`];
+        config.fields.forEach(f => linhas.push(`${config.fieldLabels[f]}: ${occ[f] || '—'}`));
+      }
+      return linhas.join('\n');
+    }).join('\n\n');
+  }
+
+  document.querySelectorAll('[data-add]').forEach(btn => {
+    btn.addEventListener('click', () => addOccurrenceCard(btn.dataset.add));
+  });
+
+  // ==== SEÇÃO DE TICKETS (estrutura própria, com checkboxes) ====
+  function addTicketCard(){
+    const template = document.getElementById('template-ticket');
+    const list = document.getElementById('tickets-list');
+    const fragment = template.content.cloneNode(true);
+    const card = fragment.querySelector('.occurrence-card');
+    card.querySelector('.remove-occurrence-btn').addEventListener('click', () => card.remove());
+    list.appendChild(fragment);
+  }
+  document.getElementById('add-ticket-btn').addEventListener('click', addTicketCard);
+
+  function collectTickets(){
+    const list = document.getElementById('tickets-list');
+    const cards = list.querySelectorAll('.ticket-card');
+    const result = [];
+    cards.forEach(card => {
+      const numero = card.querySelector('[data-field="numero"]').value.trim();
+      const nome = card.querySelector('[data-field="nome"]').value.trim();
+      const critico = card.querySelector('[data-field="critico"]').checked;
+      const pendente = card.querySelector('[data-field="pendente"]').checked;
+      if (numero || nome) result.push({ numero, nome, critico, pendente });
+    });
+    return result;
+  }
+
+  function buildTicketsText(){
+    if (!toggleState('tickets')) return 'Nenhum ticket aberto no turno.';
+    const tickets = collectTickets();
+    if (tickets.length === 0) return 'Nenhum ticket aberto no turno.';
+
+    const criticos = tickets.filter(t => t.critico).length;
+    const pendentes = tickets.filter(t => t.pendente);
+
+    const linhas = [];
+    linhas.push(`Total de tickets no turno: ${tickets.length}`);
+    linhas.push(`Tickets críticos: ${criticos}`);
+    linhas.push('Tickets:');
+    tickets.forEach(t => {
+      const tags = [];
+      if (t.critico) tags.push('Crítico');
+      if (t.pendente) tags.push('Pendente para o próximo turno');
+      const tagStr = tags.length ? ` (${tags.join(', ')})` : '';
+      linhas.push(`- ${t.numero || 'Sem número'} — ${t.nome || 'Sem descrição'}${tagStr}`);
+    });
+    linhas.push(`Tickets pendentes para o próximo turno: ${pendentes.length > 0 ? pendentes.map(t => t.numero || t.nome).join(', ') : 'Nenhum'}`);
+    return linhas.join('\n');
+  }
+  // ====================================================================
 
   // set default date to today
   const dataInput = document.getElementById('data');
@@ -443,6 +656,13 @@
         btn.classList.add('active');
         if (btn.dataset.val === 'sim') {
           body.classList.remove('hidden');
+          if (key === 'tickets') {
+            const list = document.getElementById('tickets-list');
+            if (list && list.children.length === 0) addTicketCard();
+          } else if (OCCURRENCE_CONFIG[key]) {
+            const list = document.getElementById(OCCURRENCE_CONFIG[key].listId);
+            if (list && list.children.length === 0) addOccurrenceCard(key);
+          }
         } else {
           body.classList.add('hidden');
         }
@@ -510,16 +730,6 @@
   turnoSelect.addEventListener('change', updateSaquesRange);
   updateSaquesRange();
 
-  // campo de tickets abertos aparece se o total for diferente de zero
-  const tkTotalInput = document.getElementById('tk-total');
-  const tkAbertosField = document.getElementById('tk-abertos-field');
-  function updateTkAbertosVisibility(){
-    const n = parseInt(tkTotalInput.value, 10) || 0;
-    tkAbertosField.classList.toggle('hidden', n === 0);
-  }
-  tkTotalInput.addEventListener('input', updateTkAbertosVisibility);
-  updateTkAbertosVisibility();
-
   function fmtDate(iso){
     if(!iso) return '';
     const [y,m,d] = iso.split('-');
@@ -555,39 +765,10 @@
       `Descrição da ocorrência: ${siteDesc || '—'}`
     ].join('\n');
 
-    const secJogos = toggleState('jogos')
-      ? [
-          `Jogos afetados: ${val('jogos-afetados') || '—'}`,
-          `Tipo de ocorrência: ${val('jogos-tipo') || '—'}`,
-          `Impacto identificado: ${val('jogos-impacto') || '—'}`
-        ].join('\n')
-      : 'Não foram identificadas ocorrências em jogos neste turno.';
-
-    const secFinanceiro = toggleState('financeiro')
-      ? [
-          `Ocorrências financeiras registradas: ${val('fin-registro') || '—'}`,
-          `PSP / Gateway envolvido (se aplicável): ${val('fin-psp') || '—'}`,
-          `Ação tomada: ${val('fin-acao') || '—'}`,
-          `Motivo: ${val('fin-motivo') || '—'}`,
-          `Status: ${val('fin-status') || '—'}`
-        ].join('\n')
-      : 'Não foram identificadas ocorrências financeiras neste turno.';
-
-    const secComunicacao = toggleState('comunicacao')
-      ? [
-          `Áreas envolvidas: ${val('com-areas') || '—'}`,
-          `Resumo da comunicação: ${val('com-resumo') || '—'}`
-        ].join('\n')
-      : 'Não houve comunicações internas relevantes neste turno.';
-
-    const ticketsLinhas = [`Total de tickets no turno: ${val('tk-total') || '0'}`];
-    if ((parseInt(val('tk-total'), 10) || 0) !== 0) {
-      ticketsLinhas.push(`Tickets abertos: ${val('tk-abertos') || '—'}`);
-    }
-    ticketsLinhas.push(`Tickets críticos: ${val('tk-criticos') || '0'}`);
-    ticketsLinhas.push(`Principais motivos de acionamento: ${val('tk-motivos') || '—'}`);
-    ticketsLinhas.push(`Tickets pendentes para o próximo turno: ${val('tk-pendentes') || 'Nenhum'}`);
-    const secTickets = ticketsLinhas.join('\n');
+    const secJogos = buildOccurrenceText('jogos');
+    const secFinanceiro = buildOccurrenceText('financeiro');
+    const secComunicacao = buildOccurrenceText('comunicacao');
+    const secTickets = buildTicketsText();
 
     const marcaAtual = document.getElementById('marca').value;
     const aplicaSaques = (marcaAtual === 'Esportes da Sorte' || marcaAtual === 'Lottu');
@@ -608,7 +789,24 @@
           : 'Não foram identificados depósitos no status New.')
       : 'Não se aplica a esta marca.';
 
-    const secObservacoes = val('obs-tecnicas') || '—';
+    const secObservacoes = buildOccurrenceText('observacoes');
+
+    // dados estruturados, para gravar na planilha por abas (uma linha por ocorrência)
+    currentStructured = {
+      siteStatus: siteStatus,
+      siteDesc: siteStatus === 'Normal' ? '' : (val('site-desc') || ''),
+      saquesAplicavel: aplicaSaques,
+      saquesIdentificado: aplicaSaques ? toggleState('saques') : false,
+      saquesDesc: aplicaSaques ? (val('saques-desc') || '') : '',
+      depositosAplicavel: aplicaDepositos,
+      depositosIdentificado: aplicaDepositos ? toggleState('depositos') : false,
+      depositosDesc: aplicaDepositos ? (val('dep-desc') || '') : '',
+      jogos: toggleState('jogos') ? collectOccurrences('jogos') : [],
+      financeiro: toggleState('financeiro') ? collectOccurrences('financeiro') : [],
+      comunicacoes: toggleState('comunicacao') ? collectOccurrences('comunicacao') : [],
+      tickets: toggleState('tickets') ? collectTickets() : [],
+      observacoes: collectOccurrences('observacoes')
+    };
 
     // guarda para o botão de envio usar, sem precisar recalcular
     currentSections = {
@@ -705,14 +903,19 @@
       turno: document.getElementById('turno').value,
       dataTurno: dataInput.value,
       secGeral: currentSections.geral || '',
-      secSite: currentSections.site || '',
-      secJogos: currentSections.jogos || '',
-      secFinanceiro: currentSections.financeiro || '',
-      secComunicacao: currentSections.comunicacao || '',
-      secTickets: currentSections.tickets || '',
-      secSaques: currentSections.saques || '',
-      secDepositos: currentSections.depositos || '',
-      secObservacoes: currentSections.observacoes || ''
+      siteStatus: currentStructured.siteStatus || '',
+      siteDesc: currentStructured.siteDesc || '',
+      saquesAplicavel: String(!!currentStructured.saquesAplicavel),
+      saquesIdentificado: String(!!currentStructured.saquesIdentificado),
+      saquesDesc: currentStructured.saquesDesc || '',
+      depositosAplicavel: String(!!currentStructured.depositosAplicavel),
+      depositosIdentificado: String(!!currentStructured.depositosIdentificado),
+      depositosDesc: currentStructured.depositosDesc || '',
+      jogosJson: JSON.stringify(currentStructured.jogos || []),
+      financeiroJson: JSON.stringify(currentStructured.financeiro || []),
+      comunicacoesJson: JSON.stringify(currentStructured.comunicacoes || []),
+      ticketsJson: JSON.stringify(currentStructured.tickets || []),
+      observacoesJson: JSON.stringify(currentStructured.observacoes || [])
     });
 
     fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
@@ -740,7 +943,7 @@
 
   document.getElementById('resetBtn').addEventListener('click', () => {
     document.querySelectorAll('input[type=text], textarea').forEach(el => el.value = '');
-    document.querySelectorAll('input[type=number]').forEach(el => el.value = '0');
+    document.querySelectorAll('.occurrence-list').forEach(list => list.innerHTML = '');
     document.querySelectorAll('.toggle button').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.toggle').forEach(t => {
       t.querySelector('button[data-val="nao"]').classList.add('active');
@@ -750,7 +953,6 @@
     });
     document.querySelector('input[name="site-status"][value="Normal"]').checked = true;
     updateSiteDescVisibility();
-    updateTkAbertosVisibility();
     updateSaquesRange();
     updateSectionsByMarca();
     document.getElementById('output-wrap').style.display = 'none';
